@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+</head>
+<body>
+      <div id="div-data">
+        <h3>截止到2018-10-1的英镑历史M15数据</h3>
+            <p>查询日期: <input type="text" name="year" />
+              <input class="year_submit" type="submit" value="确认" />
+              <input class="last_day" type="submit" value="上一天" />
+              <input class="next_day" type="submit" value="下一天" />
+            </p>
+        <div class="year_value"></div>
+      </div>
+      <script>
+      $(".year_submit").click(function(){
+          var year = $("input[name='year']").val();
+          // alert(year)
+          $.ajax({
+            url:"{% url "show_data" %}",
+            type:"post",
+            data:{"year":year},
+            success:function(data){
+              $(".year_value").text("")
+             $(".year_value").append(data)
+            }
+          });
+        });
+      
+      $(".last_day").click(function(){
+        var year = $("input[name='year']").val();
+        // 将字符串转化为时间
+        end_str = (year).replace(/-/g,"/");  
+        var end_date = new Date(end_str);
+        // 将转化为时间的天数 +1 或 -1
+        var d=new Date(end_date); 
+        d.setDate(d.getDate()-1);  
+
+        var year =d.getFullYear();//获取完整的年份(4位,1970-????)
+        var month = d.getMonth() + 1;//获取当前月份(0-11,0代表1月)
+        var day = d.getDate();//获取当前日(1-31)
+        if (month < 10) {
+            month ="0" + month;
+         }
+        if (day < 10) {
+            day ="0" + day;
+         }
+        var newYear = month +'/'+day+'/'+year;
+        $("input[name='year']").val(newYear)
+        var year = $("input[name='year']").val();
+
+          $.ajax(
+            {
+            url:"{% url "show_data" %}",
+            type:"post",
+            data:{"year":year},
+            success:function(data){
+              $(".year_value").text("")
+             $(".year_value").append(data)
+            }
+          });
+      });
+
+
+      $(".next_day").click(function(){
+        var year = $("input[name='year']").val();
+        // 将字符串转化为时间
+        end_str = (year).replace(/-/g,"/");  
+        var end_date = new Date(end_str);
+        // 将转化为时间的天数 +1 或 -1
+        var d=new Date(end_date); 
+        d.setDate(d.getDate()+1);  
+
+        var year =d.getFullYear();//获取完整的年份(4位,1970-????)
+        var month = d.getMonth() + 1;//获取当前月份(0-11,0代表1月)
+        var day = d.getDate();//获取当前日(1-31)
+        if (month < 10) {
+            month ="0" + month;
+         }
+        if (day < 10) {
+            day ="0" + day;
+         }
+        var newYear = month +'/'+day+'/'+year;
+        $("input[name='year']").val(newYear)
+        var year = $("input[name='year']").val();
+        
+          $.ajax({
+            url:"{% url "show_data" %}",
+            type:"post",
+            data:{"year":year},
+            success:function(data){
+              $(".year_value").text("")
+             $(".year_value").append(data)
+            }
+          });
+      });
+
+
+
+function formatDate(now) {
+        var year = now.getYear();
+        var month = now.getMonth() + 1;
+        var date = now.getDate();
+        var hour = now.getHours();
+        var minute = now.getMinutes();
+        var second = now.getSeconds();
+        return year + "-" + month + "-" + date + " " + hour + ":" + minute + ":" + second;
+    }
+      </script>
+</body>
+</html>

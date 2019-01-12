@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <script src="{% static 'js/echarts.js' %}"></script>
+    <!-- <script src="{% static 'js/china.js' %}"></script> -->
+</head>
+<body>
+    <!-- 插入ECharts图表 -->
+    <div id="main"></div>
+
+    <script>
+    var farmdata = function (echarts) {
+
+
+    var myChart = echarts.init(document.getElementById('main'));
+
+
+
+
+
+var rawData = [
+      {% for farmdata in farmdatas %}
+        { 
+            date: '{{ farmdata.date }}',
+            time: '{{ farmdata.time }}',
+            open: '{{ farmdata.open }}',
+            high: '{{ farmdata.high }}',
+            low: '{{ farmdata.low }}',
+            close: '{{ farmdata.close }}',
+            chinaTime: '{{ farmdata.chinaTime }}'
+        },
+      {% endfor %}
+    ]
+
+    // {
+    //                 value:[2320.26,2302.6,2287.3,2362.94],
+    //                 itemStyle: {
+    //                     normal: {
+    //                         color0: 'blue',         // 阴线填充颜色
+    //                         lineStyle: {
+    //                             width: 3,
+    //                             color0: 'blue'      // 阴线边框颜色
+    //                         }
+    //                     },
+    //                     emphasis: {
+    //                         color0: 'blue'          // 阴线填充颜色
+    //                     }
+    //                 }
+    // },
+
+
+//alert(rawData[0].chinaTime)
+// var rawData = [['2015/12/31','3570.47','3539.18','-33.69','-0.94%','3538.35','3580.6','176963664','25403106','-'],
+// ['2015/12/30','3566.73','3572.88','9.14','0.26%','3538.11','3573.68','187889600','26778766','-'],
+
+
+function calculateMA(dayCount, data) {
+    var result = [];
+    for (var i = 0, len = data.length; i < len; i++) {
+        if (i < dayCount) {
+            result.push('-');
+            continue;
+        }
+        var sum = 0;
+        for (var j = 0; j < dayCount; j++) {
+            sum += data[i - j][1];
+        }
+        result.push(sum / dayCount);
+    }
+    return result;
+}
+
+
+var dates = rawData.map(function (item) {
+    return item.time;
+});
+var chinadates = rawData.map(function (item) {
+    item.chinaTime = item.chinaTime.split(' ')[1]+'['+item.time+']';
+    return item.chinaTime;
+});
+
+var data = rawData.map(function (item) {
+    // 特定时间段 进行高亮颜色处理 用于展示欧盘美盘开盘的重要时间段
+    if(item.time == '05:00:00' || item.time == '05:15:00' || item.time == '05:30:00' || item.time == '05:45:00' || 
+    item.time == '06:00:00' || item.time == '06:15:00' || item.time == '06:30:00' || item.time == '06:45:00' ||
+    item.time == '07:00:00' || item.time == '07:15:00' || item.time == '07:30:00' || item.time == '07:45:00' ||
+    item.time == '08:00:00' || item.time == '08:15:00' || item.time == '08:30:00'
+
+    || item.time == '12:00:00' || item.time == '12:15:00' || item.time == '12:30:00' || item.time == '12:45:00'
+    || item.time == '13:00:00' || item.time == '13:15:00' || item.time == '13:30:00' || item.time == '13:45:00'){
+        var dic = {
+                value:[+item.open, +item.close, +item.low, +item.high],
+                itemStyle: {
+                    normal: {
+                        color: '#FF2D2D',         // 阳线填充颜色
+                        color0: '#0080FF',         // 阴线填充颜色
+                        
+                        borderColor: '#FF2D2D',
+                        borderColor0: '#0080FF'
+                    },
+                    emphasis: {
+                        color0: 'blue'          // 阴线填充颜色
+                    }
+                }
+    };
+    return dic;
+
+    }else{
+        return [+item.open, +item.close, +item.low, +item.high];
+    }
+    
+});
+
+var option = {
+    backgroundColor: '#21202D',
+    legend: {
+        data: ['日K', 'MA5', 'MA10', 'MA20', 'MA30'],
+        inactiveColor: '#777',
+        textStyle: {
+            color: '#fff'
+        }
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            animation: false,
+            type: 'cross',
+            lineStyle: {
+                color: '#376df4',
+                width: 2,
+                opacity: 1
+            }
+        }
+    },
+    xAxis: {
+        type: 'category',
+        data: chinadates,
+        axisLine: { lineStyle: { color: '#8392A5' } }
+    },
+    yAxis: {
+        scale: true,
+        axisLine: { lineStyle: { color: '#8392A5' } },
+        splitLine: { show: false }
+    },
+    grid: {
+        bottom: 80
+    },
+    dataZoom: [{
+        textStyle: {
+            color: '#8392A5'
+        },
+        handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+        handleSize: '80%',
+        dataBackground: {
+            areaStyle: {
+                color: '#8392A5'
+            },
+            lineStyle: {
+                opacity: 0.8,
+                color: '#8392A5'
+            }
+        },
+        handleStyle: {
+            color: '#fff',
+            shadowBlur: 3,
+            shadowColor: 'rgba(0, 0, 0, 0.6)',
+            shadowOffsetX: 2,
+            shadowOffsetY: 2
+        }
+    }, {
+        type: 'inside'
+    }],
+    animation: false,
+    series: [
+        {
+            type: 'candlestick',
+            name: '日K',
+            data: data,
+            itemStyle: {
+                normal: {
+                    color: '#28FF28',
+                    color0: '#FF9224',
+                    borderColor: '#28FF28',
+                    borderColor0: '#FF9224'
+                }
+            }
+        },  
+        // {
+        //     name: 'MA5',
+        //     type: 'line',
+        //     data: calculateMA(5, data),
+        //     smooth: true,
+        //     showSymbol: false,
+        //     lineStyle: {
+        //         normal: {
+        //             width: 1
+        //         }
+        //     }
+        // },
+        // {
+        //     name: 'MA10',
+        //     type: 'line',
+        //     data: calculateMA(10, data),
+        //     smooth: true,
+        //     showSymbol: false,
+        //     lineStyle: {
+        //         normal: {
+        //             width: 1
+        //         }
+        //     }
+        // },
+        // {
+        //     name: 'MA20',
+        //     type: 'line',
+        //     data: calculateMA(20, data),
+        //     smooth: true,
+        //     showSymbol: false,
+        //     lineStyle: {
+        //         normal: {
+        //             width: 1
+        //         }
+        //     }
+        // },
+        // {
+        //     name: 'MA30',
+        //     type: 'line',
+        //     data: calculateMA(30, data),
+        //     smooth: true,
+        //     showSymbol: false,
+        //     lineStyle: {
+        //         normal: {
+        //             width: 1
+        //         }
+        //     }
+        // }
+    ]
+};
+
+
+
+
+
+    /*
+    // 数据库数据插入
+    var cityDict = [
+      {% for farmdata in farmdatas %}
+        {name: '{{ farmdata.date }}',value: {{ farmdata.open }} },
+      {% endfor %}
+    ]
+    // 循环每个城市的数据
+    var cityData = function(array) {
+        var data = []
+        for (var i = 0; i < array.length; i++) {
+          var e = array[i]
+          data.push(e)
+          // console.log('e', e)
+
+        }
+        return data
+    }
+
+    var option = {
+        title: {
+            text: '全国粮食作物面积统计表',
+            subtext: '',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'item'
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            data:['面积(万亩)']
+        },
+        visualMap: {
+            min: 0,
+            max: 20000,
+            left: 'left',
+            top: 'bottom',
+            text: ['高','低'],           // 文本，默认为数值文本
+            calculable: true
+        },
+        toolbox: {
+            show: true,
+            orient: 'vertical',
+            left: 'right',
+            top: 'center',
+            feature: {
+                dataView: {readOnly: false},
+                restore: {},
+                saveAsImage: {}
+            }
+        },
+        series: [
+            {
+                name: '面积(万亩)',
+                type: 'map',
+                map: 'china',
+                roam: false,
+                label: {
+                    normal: {
+                        show: true
+                    },
+                    emphasis: {
+                        show: true
+                    }
+                },
+                // 每个城市数据调用
+                data:cityData(cityDict)
+            },
+        ]
+    };
+    */
+
+    myChart.setOption(option);
+  };
+  // 函数调用
+    farmdata(echarts)
+    </script>
+</body>
+</html>
