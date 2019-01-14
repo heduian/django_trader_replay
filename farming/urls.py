@@ -22,4 +22,6 @@ urlpatterns = [
     url(r'^main/', views.main, name='main'),
     url(r'^showdata/', views.show_data, name = "show_data"),
 
+               
+               
 ]

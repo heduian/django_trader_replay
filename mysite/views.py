@@ -14,3 +14,4 @@ def show_data(request):
         year = request.POST.get("year")
         farmdatas = GBP_m15.objects.filter(date=year)
         return render(request,'farm/echarts_data.html', {"farmdatas":farmdatas})
+
